@@ -1,0 +1,18 @@
+version: '3.1'
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql-foroHub
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ForoHub       # Nombre de la base de datos a crear
+      #MYSQL_USER: user            # Nombre de usuario no root
+      #MYSQL_PASSWORD: password     # Contraseña para el usuario no root
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-data-foroHub:/var/lib/mysql
+volumes:
+  mysql-data-foroHub:
