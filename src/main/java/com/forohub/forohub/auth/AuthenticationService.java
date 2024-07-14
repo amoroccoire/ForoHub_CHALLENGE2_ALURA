@@ -1,4 +1,4 @@
-package com.forohub.forohub.auth.config;
+package com.forohub.forohub.auth;
 
 import com.forohub.forohub.user.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
