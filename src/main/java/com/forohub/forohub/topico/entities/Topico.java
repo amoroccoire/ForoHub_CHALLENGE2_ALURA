@@ -6,7 +6,6 @@ import com.forohub.forohub.user.entities.Usuario;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.springframework.data.annotation.Id;
 
 import java.time.LocalDateTime;
 
@@ -15,6 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @Setter
+@Entity
 public class Topico {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,11 +24,9 @@ public class Topico {
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy HH:mm")
     private LocalDateTime fechaCreacion;
-    @NotNull
     @Enumerated(EnumType.STRING)
     private Estado estado;
 
-    @NotNull
     @ManyToOne
     @JoinColumn(name = "usuario_id", nullable = false)
     @JsonBackReference
