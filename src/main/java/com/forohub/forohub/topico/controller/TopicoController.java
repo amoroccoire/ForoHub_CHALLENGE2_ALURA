@@ -6,12 +6,17 @@ import com.forohub.forohub.topico.entities.Topico;
 import com.forohub.forohub.topico.services.TopicoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 
-@RestController("/topico")
+
+@RestController
+@RequestMapping("/topico")
 public class TopicoController {
     @Autowired
     private TopicoService topicoService;
@@ -22,22 +27,28 @@ public class TopicoController {
     }
 
     @GetMapping("/{id}")
-    public Optional<Topico> getTopicoById(@PathVariable Integer id) {
+    public ResponseEntity<Topico> getTopicoById(@PathVariable Integer id) {
         Optional<Topico> topicoFound = topicoService.getTopicoById(id);
         if (!topicoFound.isPresent()) {
-            return null
+            return ResponseEntity.notFound().build();
         }
-        return topicoService.getTopicoById(id);
+        return ResponseEntity.ok(topicoFound.get());
     }
 
     @PostMapping
-    public Topico createTopico(@RequestBody @Valid TopicoDTO topicoDTO) {
-        return topicoService.crearTopico(topicoDTO);
+    public ResponseEntity<Topico> createTopico(@RequestBody @Valid TopicoDTO topicoDTO) {
+        Topico createdTopico = topicoService.crearTopico(topicoDTO);
+        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}")
+                .buildAndExpand(createdTopico.getId())
+                .toUri();
+        return ResponseEntity.created(location).body(createdTopico);
     }
 
     @PutMapping
-    public Topico updateTopico(@RequestBody UpdateTopico updateTopico) {
-        return topicoService.updateTopico(updateTopico);
+    public ResponseEntity<Topico> updateTopico(@RequestBody UpdateTopico updateTopico) {
+        Topico updatedTopico = topicoService.updateTopico(updateTopico);
+        return ResponseEntity.ok(updatedTopico);
     }
 
     @DeleteMapping("/{id}")
