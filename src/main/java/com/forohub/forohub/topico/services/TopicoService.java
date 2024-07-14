@@ -1,11 +1,15 @@
 package com.forohub.forohub.topico.services;
 
+import com.forohub.forohub.error.ResourceNotFoundException;
 import com.forohub.forohub.topico.dto.TopicoDTO;
 import com.forohub.forohub.topico.dto.UpdateTopico;
 import com.forohub.forohub.topico.entities.Estado;
 import com.forohub.forohub.topico.entities.Topico;
 import com.forohub.forohub.topico.repositories.TopicoRepository;
+import com.forohub.forohub.user.entities.Usuario;
+import com.forohub.forohub.user.repositories.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,6 +21,8 @@ import java.util.Optional;
 public class TopicoService {
     @Autowired
     private TopicoRepository topicoRepository;
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     public List<Topico> getAllTopicos() {
         return topicoRepository.findAll();
@@ -27,7 +33,7 @@ public class TopicoService {
     }
 
     public Topico crearTopico(TopicoDTO topicoDTO) {
-        Optional<Topico> userFound = topicoRepository.findById(topicoDTO.usuarioId());
+        Optional<Usuario> userFound = usuarioRepository.findById(topicoDTO.usuarioId());
         if (!userFound.isPresent()) {
             System.out.println("ERROR");
             return null;
@@ -38,7 +44,8 @@ public class TopicoService {
 
         Topico topicoSaved = Topico.builder()
                 .id(null)
-                .autor(userFound.get().getAutor())
+                .titulo(topicoDTO.curso())
+                .autor(userFound.get())
                 .curso(topicoDTO.curso())
                 .fechaCreacion(fechaCreacion)
                 .estado(Estado.ACTIVO)
@@ -48,32 +55,21 @@ public class TopicoService {
     }
 
     public Topico updateTopico(UpdateTopico updateTopico) {
-        Optional<Topico> topicoFound = topicoRepository.findById(updateTopico.id());
-        if (!topicoFound.isPresent()) {
-            System.out.println("ERROR");
-            return null;
-        }
 
-        Topico topico = topicoFound.get();
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        LocalDateTime fechaCreacion = LocalDateTime.parse(updateTopico.fechaCreacion(), formatter);
-
-        topico.setTitulo(updateTopico.titulo());
-        topico.setFechaCreacion(fechaCreacion);
-        topico.setCurso(updateTopico.curso());
-
-        return topicoRepository.save(topico);
+        return topicoRepository.findById(updateTopico.id()).map(topico -> {
+            topico.setTitulo(updateTopico.titulo());
+            topico.setFechaCreacion(LocalDateTime.parse(updateTopico.fechaCreacion(), DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            topico.setCurso(updateTopico.curso());
+            return topicoRepository.save(topico);
+        }).orElseThrow(() -> new ResourceNotFoundException("Topico not found with id " + updateTopico.id()));
     }
 
-    public void deleteTopico(Integer id) {
+    public ResponseEntity deleteTopico(Integer id) {
        Optional<Topico> topicoFound = topicoRepository.findById(id);
        if (!topicoFound.isPresent()) {
-           System.out.println("ERROR");
-
+           throw new ResourceNotFoundException("Topico not found with id " + id);
        }
        topicoRepository.deleteById(id);
+       return ResponseEntity.ok().build();
     }
-
-
 }
